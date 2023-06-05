@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, createContext } from "react"
+import { useState, createContext, useEffect } from "react"
+import axios from "axios"
+import {getCookie} from 'cookies-next'
 
 interface User {
     id: number;
@@ -21,7 +23,7 @@ interface AuthState extends State {
     setAuthState: React.Dispatch<React.SetStateAction<State>>
 }
 
-const AuthenticationContext = createContext<AuthState>({
+export const AuthenticationContext = createContext<AuthState>({
     loading: false,
     error: null,
     data: null,
@@ -35,16 +37,59 @@ export default function AuthContext({
     children: React.ReactNode
 }) {
     const [authState, setAuthState] = useState<State>({
-        loading: false,
+        loading: true,
         data: null,
         error: null
-    })
+    });
+   
+    const fetchUser = async () => {
+        setAuthState({
+            data:null, 
+            error:null, 
+            loading:true
+        });
+        try {
+            const jwt =  getCookie("jwt")
+            
+            if (!jwt) {
+                return setAuthState({
+                    data:null, 
+                    error:null, 
+                    loading:false
+                })
+            }
+            const response = await axios.get('http://localhost:3000/api/auth/me', {
+                headers: {
+                    Authorization: `Bearer ${jwt}`
+                }
+            })
+
+            axios.defaults.headers.common["Authorizaton"] = `Bearer ${jwt}`
+
+            setAuthState({
+                data:response.data,
+                error:null,
+                loading:false
+            });
+
+        } catch (error: any) {
+            setAuthState({
+                data:null,
+                error: error.response.data.errorMessage,
+                loading:false
+            })
+        }
+    }
+
+    useEffect(() => {
+        fetchUser();
+    }, [])
 
     return (
-    <AuthenticationContext.Provider value={{
-        ...authState,
-        setAuthState
-    }}>
-        {children}
-    </AuthenticationContext.Provider >)
+        <AuthenticationContext.Provider value={{
+            ...authState,
+            setAuthState
+        }}>
+            {children}
+        </AuthenticationContext.Provider >)
 }
