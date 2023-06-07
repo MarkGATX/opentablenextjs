@@ -110,18 +110,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const booking = await prisma.booking.create({
-            data: {
-              number_of_people: parseInt(partySize),
-              booking_time: new Date(`${day}T${time}`),
-              booker_email: booker_email,
-              booker_phone: booker_phone,
-              booker_first_name: booker_first_name,
-              booker_last_name: booker_last_name,
-              booker_occasion: booker_occasion,
-              booker_requests: booker_requests,
-              restaurant_id: restaurant.id,
-            },
-          });
+  data: {
+    number_of_people: parseInt(partySize),
+    booking_time: new Date(`${day}T${time}`),
+    booker_email: booker_email,
+    booker_phone: booker_phone,
+    booker_first_name: booker_first_name,
+    booker_last_name: booker_last_name,
+    booker_occasion: booker_occasion,
+    booker_requests: booker_requests,
+    restaurant_id: restaurant.id,
+  },
+});
 
         const bookingsOnTablesData = tablesToBooks.map(table_id => {
             return {
